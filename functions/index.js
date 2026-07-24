@@ -45,20 +45,26 @@ async function notifyAll(title, body) {
   }
 }
 
+function bilingualName(item) {
+  const es = item.name_es || item.name_en || "Artículo/Item";
+  const en = item.name_en || item.name_es || "Artículo/Item";
+  return es === en ? es : `${es} / ${en}`;
+}
+
 exports.onCurrentListItemAdded = functions.database
   .ref("/currentList/{itemId}")
   .onCreate(async (snapshot) => {
     const item = snapshot.val() || {};
-    const name = item.name_es || item.name_en || "Un artículo";
+    const name = bilingualName(item);
     const addedBy = item.addedBy ? ` (${item.addedBy})` : "";
-    await notifyAll("La Lista", `Añadido: ${name}${addedBy}`);
+    await notifyAll("La Lista", `Añadido/Added: ${name}${addedBy}`);
   });
 
 exports.onRequestItemAdded = functions.database
   .ref("/requests/{requestId}")
   .onCreate(async (snapshot) => {
     const item = snapshot.val() || {};
-    const name = item.name_es || item.name_en || "Un artículo";
+    const name = bilingualName(item);
     const by = item.requestedBy ? ` (${item.requestedBy})` : "";
-    await notifyAll("El Nook", `Aviso: ${name}${by}`);
+    await notifyAll("El Nook", `Aviso/Flag: ${name}${by}`);
   });
