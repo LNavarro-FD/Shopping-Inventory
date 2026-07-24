@@ -828,6 +828,8 @@ const STR = {
     nameChangePrompt: "Cambiar tu nombre:",
     toastAdded: (n)=>`Añadido: ${n}`,
     toastEmptyAlready: "La lista ya está vacía",
+    confirmFinishList: (n)=>`¿Terminar esta lista? ${n} artículo${n===1?'':'s'} se moverá${n===1?'':'n'} al Historial y empezarás una lista nueva.`,
+    confirmDeleteHistory: "¿Eliminar esta lista del historial?",
     toastFinished: "Lista completada ✓ Empezando una nueva",
     toastBuiltFromHistory: "Artículos añadidos a tu lista",
     catalogCountLabel: (n)=>`${n} productos`,
@@ -895,6 +897,8 @@ const STR = {
     nameChangePrompt: "Change your name:",
     toastAdded: (n)=>`Added: ${n}`,
     toastEmptyAlready: "The list is already empty",
+    confirmFinishList: (n)=>`Finish this list? ${n} item${n===1?'':'s'} will move to History and you'll start a new one.`,
+    confirmDeleteHistory: "Delete this list from history?",
     toastFinished: "List completed ✓ Starting a new one",
     toastBuiltFromHistory: "Items added to your list",
     catalogCountLabel: (n)=>`${n} products`,
@@ -1349,6 +1353,7 @@ function removeItem(id){
 function finishList(){
   const items = Object.values(currentList);
   if (items.length === 0) { showToast(t('toastEmptyAlready')); return; }
+  if (!confirm(t('confirmFinishList')(items.length))) return;
   const listId = uid();
   history[listId] = { completedAt: Date.now(), items };
   currentList = {};
@@ -1356,6 +1361,12 @@ function finishList(){
   saveCurrentList();
   showToast(t('toastFinished'));
   setView('catalog');
+}
+
+function deleteHistoryEntry(id){
+  if (!confirm(t('confirmDeleteHistory'))) return;
+  delete history[id];
+  saveHistory();
 }
 
 function buildRegularListFromHistory(id){
@@ -1591,6 +1602,7 @@ function renderHistoryView(){
         </div>
         <div class="card-actions">
           <button class="primary" onclick="buildRegularListFromHistory('${id}')">${t('buildRegularBtn')}</button>
+          <button onclick="deleteHistoryEntry('${id}')">${t('deleteBtn')}</button>
         </div>
       </div>
     `;
