@@ -66,6 +66,9 @@
     opacity:0.65;
     margin-top:2px;
   }
+  .version-tag{
+    opacity:0.6;
+  }
   .top-right{
     display:flex;
     align-items:center;
@@ -665,7 +668,7 @@
   <div class="top-row">
     <div>
       <h1 id="app-title">La Lista</h1>
-      <div class="sub" id="week-label">SEMANA A SEMANA</div>
+      <div class="sub"><span id="week-label">SEMANA A SEMANA</span> <span class="version-tag" id="version-tag"></span></div>
     </div>
     <div class="top-right">
       <div class="lang-toggle">
@@ -803,6 +806,11 @@ try {
    The list itself is shared data; only the display language
    is a per-device preference (stored in localStorage).
 ============================================================ */
+// APP_VERSION — bump on every change (patch=fix, minor=feature, major=breaking).
+// Shown in the header so you can tell at a glance whether a device has the
+// latest copy, and so we both know exactly what's live vs. what's pending.
+const APP_VERSION = "v1.0.0";
+
 let lang = localStorage.getItem("lalista_lang") || "es";
 
 const STR = {
@@ -1155,6 +1163,7 @@ let myName = localStorage.getItem("lalista_myname") || "";
 
 function applyStaticText(){
   document.getElementById('week-label').textContent = t('appSub');
+  document.getElementById('version-tag').textContent = APP_VERSION;
   document.getElementById('nav-list').textContent = t('navList');
   document.getElementById('nav-catalog').textContent = t('navCatalog');
   document.getElementById('nav-history').textContent = t('navHistory');
