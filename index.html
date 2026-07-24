@@ -1090,7 +1090,12 @@ let history = {};       // listId -> {completedAt,items:[]}
 let requests = {};      // requestId -> {name_es,name_en,category,stream,supplier,qty,requestedBy,ts} (El Nook)
 let supplierOrders = {}; // orderId -> {name_es,name_en,supplier,qty,ts} (El Nook breakables to buy new)
 let nookItemPhotos = {}; // itemId (seed or custom) -> download URL, reference photo for El Nook items
-let view = "catalog";
+
+// NOOK-ONLY MODE — a link with ?view=nook shows just El Nook, nothing else.
+// Give this link to Iskra (or anyone) who shouldn't see the shopping list/history.
+const NOOK_ONLY_MODE = new URLSearchParams(window.location.search).get('view') === 'nook';
+
+let view = NOOK_ONLY_MODE ? "requests" : "catalog";
 let catalogSearch = "";
 let collapsedCategories = {}; // catId -> true (collapsed) — default all collapsed
 CATEGORY_ORDER.forEach(c=>{ collapsedCategories[c] = true; });
@@ -1121,6 +1126,14 @@ if (!myName) {
 }
 applyStaticText();
 updateNotifBtn();
+
+if (NOOK_ONLY_MODE) {
+  ['nav-catalog','nav-list','nav-history'].forEach(id=>{
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+  document.getElementById('action-bar').style.display = 'none';
+}
 
 function openNameModal(){
   const n = prompt(t('nameChangePrompt'), myName);
@@ -1298,9 +1311,10 @@ function renderModal(html){
 function closeModal(){ document.getElementById('modal-root').innerHTML = ""; }
 
 function setView(v){
+  if (NOOK_ONLY_MODE) v = 'requests';
   view = v;
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active', b.dataset.view===v));
-  document.getElementById('action-bar').style.display = (v==='list') ? 'flex' : 'none';
+  document.getElementById('action-bar').style.display = (v==='list' && !NOOK_ONLY_MODE) ? 'flex' : 'none';
   render();
 }
 
