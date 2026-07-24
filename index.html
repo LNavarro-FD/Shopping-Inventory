@@ -161,6 +161,12 @@
     font-size:19px;
     margin-bottom:6px;
   }
+  .current-list-subtitle{
+    font-size:12px;
+    color:var(--ink-soft);
+    margin:-2px 0 10px;
+    line-height:1.4;
+  }
   .list-header-row{
     display:flex;
     justify-content:space-between;
@@ -815,7 +821,7 @@ try {
 // APP_VERSION — bump on every change (patch=fix, minor=feature, major=breaking).
 // Shown in the header so you can tell at a glance whether a device has the
 // latest copy, and so we both know exactly what's live vs. what's pending.
-const APP_VERSION = "v1.1.0";
+const APP_VERSION = "v1.2.0";
 
 let lang = localStorage.getItem("lalista_lang") || "es";
 
@@ -848,13 +854,14 @@ const STR = {
     toastBuiltFromHistory: "Artículos añadidos a tu lista",
     catalogCountLabel: (n)=>`${n} productos`,
     startBannerTitleEmpty: "No tienes ninguna lista activa",
-    startBannerBodyEmpty: "Elige artículos de abajo o añade algo suelto para empezar tu lista de esta semana.",
+    startBannerBodyEmpty: "Elige artículos de abajo para crear tu lista.",
     startBannerBtn: "Empezar lista",
     startBannerTitleActive: (n)=>`Tienes ${n} artículo${n===1?'':'s'} en tu lista`,
     startBannerBtnActive: "Ver mi lista →",
     buildRegularBtn: "Crear lista habitual desde aquí",
     listStartedLabel: (d)=>`Empezada: ${d}`,
     currentListTitle: "Lista actual",
+    currentListSubtitle: "Puedes seguir añadiendo artículos hasta que pulses \"Archivar lista\" — entonces se cierra y se guarda en el Historial.",
     addMoreFromCatalogBtn: "+ Añadir más desde el Catálogo",
     requestsEmptyTitle: "Sin avisos de El Nook",
     requestsEmptyBody: "Cuando Iskra avise de que falta algo, aparecerá aquí.",
@@ -918,13 +925,14 @@ const STR = {
     toastBuiltFromHistory: "Items added to your list",
     catalogCountLabel: (n)=>`${n} products`,
     startBannerTitleEmpty: "You don't have an active list",
-    startBannerBodyEmpty: "Pick items below or add something loose to start this week's list.",
+    startBannerBodyEmpty: "Pick items below to create your list.",
     startBannerBtn: "Start list",
     startBannerTitleActive: (n)=>`You have ${n} item${n===1?'':'s'} in your list`,
     startBannerBtnActive: "See my list →",
     buildRegularBtn: "Build regular list from this",
     listStartedLabel: (d)=>`Started: ${d}`,
     currentListTitle: "Current list",
+    currentListSubtitle: "You can keep adding items until you tap \"Archive list\" — that closes it and saves it to History.",
     addMoreFromCatalogBtn: "+ Add more from the Catalog",
     requestsEmptyTitle: "No flags from El Nook",
     requestsEmptyBody: "When Iskra flags something as needed, it'll show up here.",
@@ -1457,6 +1465,7 @@ function renderListView(){
 
   let html = `
     <div class="current-list-title">${t('currentListTitle')}</div>
+    <div class="current-list-subtitle">${t('currentListSubtitle')}</div>
     <div class="list-header-row">
       <span class="list-started">${t('listStartedLabel')(startedLabel)}</span>
       <button class="add-more-link" onclick="setView('catalog')">${t('addMoreFromCatalogBtn')}</button>
@@ -1523,7 +1532,6 @@ function renderCatalogView(){
     ? `<div class="start-banner">
          <div class="start-banner-title">${t('startBannerTitleEmpty')}</div>
          <div class="start-banner-body">${t('startBannerBodyEmpty')}</div>
-         <button class="start-banner-btn" onclick="document.getElementById('catalog-search-input').focus()">${t('startBannerBtn')}</button>
        </div>`
     : `<div class="start-banner active">
          <div class="start-banner-title">${t('startBannerTitleActive')(currentCount)}</div>
