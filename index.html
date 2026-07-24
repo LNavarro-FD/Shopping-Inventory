@@ -596,6 +596,16 @@
     font-size:14px;
     margin-bottom:12px;
   }
+  .modal select{
+    width:100%;
+    max-width:100%;
+    padding:10px;
+    border-radius:8px;
+    border:1px solid var(--line);
+    font-size:14px;
+    background:var(--white);
+    color:var(--ink);
+  }
   .modal .modal-actions{display:flex;gap:8px;}
   .modal .modal-actions button{
     flex:1;
@@ -839,7 +849,7 @@ const STR = {
     addPhotoLabel: "Añadir foto",
     modalCancel: "Cancelar",
     modalSave: "Guardar",
-    nookLocationPlaceholder: "Ubicación (p.ej. armario cocina)",
+    nookLocationNone: "Sin ubicación",
     nookNotePlaceholder: "Nota (opcional)",
     editNoteLocationLabel: "Editar nota/ubicación",
     requestsPendingHeading: "Avisos pendientes",
@@ -906,7 +916,7 @@ const STR = {
     addPhotoLabel: "Add photo",
     modalCancel: "Cancel",
     modalSave: "Save",
-    nookLocationPlaceholder: "Location (e.g. kitchen cupboard)",
+    nookLocationNone: "No location set",
     nookNotePlaceholder: "Note (optional)",
     editNoteLocationLabel: "Edit note/location",
     requestsPendingHeading: "Pending flags",
@@ -1300,6 +1310,22 @@ function streamSelectHtml(selectId){
   return `<select id="${selectId}" class="category-select">${opts}</select>`;
 }
 
+const LOCATION_OPTIONS = [
+  { id:"shed", es:"Cobertizo", en:"Shed" },
+  { id:"nook", es:"El Nook", en:"The Nook" },
+  { id:"under_bed", es:"Debajo de la cama", en:"Under the bed" },
+  { id:"house_kitchen", es:"Cocina de la casa", en:"House kitchen" }
+];
+function locationLabel(id){
+  const opt = LOCATION_OPTIONS.find(o=>o.id===id);
+  return opt ? opt[lang] : id;
+}
+function locationSelectHtml(selectId, selectedId){
+  const noneOpt = `<option value="">${t('nookLocationNone')}</option>`;
+  const opts = LOCATION_OPTIONS.map(o=>`<option value="${o.id}" ${o.id===selectedId?'selected':''}>${o[lang]}</option>`).join('');
+  return `<select id="${selectId}" class="category-select">${noneOpt}${opts}</select>`;
+}
+
 function toggleCheck(id){
   currentList[id].checked = !currentList[id].checked;
   saveCurrentList();
@@ -1631,7 +1657,7 @@ function renderRequestsView(){
               ${displayName}${it.supplier ? ` <span class="supplier-tag">${it.supplier}</span>` : ''}
               ${it.alwaysReplace ? `<div class="always-replace-note">${t('alwaysReplaceNote')}</div>` : ''}
               ${(!it.alwaysReplace && it.parQty > 1) ? `<div class="par-note">${t('parLabel')(it.parQty)}</div>` : ''}
-              ${meta.location ? `<div class="nook-location">📍 ${meta.location}</div>` : ''}
+              ${meta.location ? `<div class="nook-location">📍 ${locationLabel(meta.location)}</div>` : ''}
               ${meta.note ? `<div class="nook-note">${meta.note}</div>` : ''}
             </div>
             <button class="edit-meta-btn" onclick='openNookMetaModal("${it.id}", ${displayNamePayload})' title="${t('editNoteLocationLabel')}">✏️</button>
@@ -1823,7 +1849,8 @@ function openNookMetaModal(itemId, displayName){
   const existing = nookItemMeta[itemId] || {};
   renderModal(`
     <h3>${displayName}</h3>
-    <input id="nook-meta-location-input" placeholder="${t('nookLocationPlaceholder')}" value="${existing.location||''}" />
+    ${locationSelectHtml('nook-meta-location-input', existing.location||'')}
+    <div style="height:10px;"></div>
     <input id="nook-meta-note-input" placeholder="${t('nookNotePlaceholder')}" value="${existing.note||''}" />
     <div class="modal-actions">
       <button style="background:var(--paper-dark);" onclick="closeModal()">${t('modalCancel')}</button>
