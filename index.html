@@ -1,0 +1,1769 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>La Lista — Weekly Shop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F0E6D2;
+    --paper-dark:#E4D6B8;
+    --ink:#2B2A26;
+    --ink-soft:#6B665C;
+    --teal:#1C1C1A;
+    --teal-light:#33322D;
+    --mustard:#E3A73B;
+    --mustard-dark:#C68A22;
+    --stamp:#B33F32;
+    --line:#C9BB98;
+    --white:#FBF9F3;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  .display{font-family:'Space Grotesk',sans-serif;}
+
+  header{
+    background:var(--teal);
+    color:var(--white);
+    padding:18px 16px 14px;
+    position:sticky;
+    top:0;
+    z-index:20;
+  }
+  header .top-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:8px;
+  }
+  header h1{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:22px;
+    margin:0;
+    letter-spacing:0.5px;
+  }
+  header .sub{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    opacity:0.65;
+    margin-top:2px;
+  }
+  .top-right{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    flex-shrink:0;
+  }
+  .lang-toggle{
+    display:flex;
+    background:rgba(255,255,255,0.12);
+    border:1px solid rgba(255,255,255,0.25);
+    border-radius:20px;
+    padding:2px;
+  }
+  .lang-toggle button{
+    background:none;
+    border:none;
+    color:rgba(255,255,255,0.6);
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    font-weight:500;
+    padding:5px 10px;
+    border-radius:16px;
+    cursor:pointer;
+  }
+  .lang-toggle button.active{
+    background:var(--mustard);
+    color:var(--teal);
+    font-weight:700;
+  }
+  .name-pill{
+    background:rgba(255,255,255,0.12);
+    border:1px solid rgba(255,255,255,0.25);
+    border-radius:20px;
+    padding:6px 12px;
+    font-size:12px;
+    font-family:'IBM Plex Mono',monospace;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .notif-btn{
+    background:rgba(255,255,255,0.12);
+    border:1px solid rgba(255,255,255,0.25);
+    border-radius:50%;
+    width:34px;
+    height:34px;
+    font-size:15px;
+    cursor:pointer;
+    flex-shrink:0;
+  }
+  .notif-btn.enabled{
+    background:var(--mustard);
+    border-color:var(--mustard);
+  }
+  nav{
+    display:flex;
+    gap:4px;
+    margin-top:14px;
+    background:rgba(0,0,0,0.18);
+    border-radius:10px;
+    padding:3px;
+  }
+  nav button{
+    flex:1;
+    background:none;
+    border:none;
+    color:rgba(255,255,255,0.6);
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:500;
+    font-size:13px;
+    padding:9px 4px;
+    border-radius:8px;
+    cursor:pointer;
+  }
+  nav button.active{
+    background:var(--mustard);
+    color:var(--teal);
+    font-weight:700;
+  }
+
+  main{
+    max-width:560px;
+    margin:0 auto;
+    padding:16px 14px 100px;
+  }
+
+  /* progress */
+  .list-header-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:8px;
+    margin-bottom:10px;
+    flex-wrap:wrap;
+  }
+  .list-started{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    color:var(--ink-soft);
+  }
+  .add-more-link{
+    background:none;
+    border:1px solid var(--line);
+    color:var(--teal);
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:12px;
+    padding:6px 12px;
+    border-radius:20px;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .progress-wrap{
+    margin:2px 0 18px;
+  }
+  .progress-label{
+    display:flex;
+    justify-content:space-between;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    color:var(--ink-soft);
+    margin-bottom:6px;
+  }
+  .progress-bar{
+    height:8px;
+    background:var(--paper-dark);
+    border-radius:4px;
+    overflow:hidden;
+    border:1px solid var(--line);
+  }
+  .progress-fill{
+    height:100%;
+    background:var(--mustard);
+    transition:width 0.35s ease;
+  }
+
+  /* receipt-style category sections */
+  .category-block{
+    margin-bottom:6px;
+  }
+  .category-head{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:1.2px;
+    color:var(--ink-soft);
+    padding:14px 0 6px;
+    border-bottom:1px dashed var(--line);
+    margin-bottom:6px;
+  }
+  .category-head.clickable{
+    cursor:pointer;
+    user-select:none;
+  }
+  .category-head .chevron{
+    margin-left:auto;
+    transition:transform 0.2s ease;
+    font-size:10px;
+  }
+  .category-head .chevron.open{transform:rotate(90deg);}
+  .category-head .count{
+    color:var(--ink-soft);
+    font-weight:400;
+    normal-case:none;
+    text-transform:none;
+    letter-spacing:0;
+  }
+  .stream-hint{
+    font-size:12px;
+    color:var(--ink-soft);
+    margin:-2px 0 8px;
+    line-height:1.4;
+  }
+  .supplier-tag{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10px;
+    background:var(--paper-dark);
+    color:var(--ink-soft);
+    padding:1px 6px;
+    border-radius:4px;
+  }
+  .always-replace-note{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10px;
+    color:var(--stamp);
+    margin-top:2px;
+  }
+  .par-note{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10px;
+    color:var(--ink-soft);
+    margin-top:2px;
+  }
+
+  .item-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:9px 0;
+    border-bottom:1px dotted var(--line);
+  }
+  .item-row:last-child{border-bottom:none;}
+
+  .stamp-box{
+    width:30px;
+    height:30px;
+    border-radius:50%;
+    border:2px solid var(--ink-soft);
+    flex-shrink:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    background:var(--white);
+    transition:transform 0.15s ease;
+  }
+  .stamp-box:active{transform:scale(0.9);}
+  .stamp-box.checked{
+    border-color:var(--stamp);
+    background:var(--stamp);
+    color:var(--white);
+    transform:rotate(-8deg) scale(1.05);
+    animation:stampHit 0.28s ease;
+  }
+  @keyframes stampHit{
+    0%{transform:rotate(0deg) scale(1.4);opacity:0.4;}
+    60%{transform:rotate(-10deg) scale(0.92);}
+    100%{transform:rotate(-8deg) scale(1.05);opacity:1;}
+  }
+  .stamp-box svg{width:16px;height:16px;}
+
+  .item-info{flex:1;min-width:0;}
+  .item-name{
+    font-size:15px;
+    font-weight:500;
+  }
+  .item-name.checked{
+    text-decoration:line-through;
+    color:var(--ink-soft);
+  }
+  .item-meta{
+    display:flex;
+    gap:6px;
+    align-items:center;
+    margin-top:2px;
+  }
+  .added-by{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10px;
+    color:var(--ink-soft);
+  }
+
+  .qty-stepper{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    font-family:'IBM Plex Mono',monospace;
+  }
+  .qty-stepper button{
+    width:24px;
+    height:24px;
+    border-radius:50%;
+    border:1px solid var(--line);
+    background:var(--white);
+    font-size:14px;
+    cursor:pointer;
+    line-height:1;
+  }
+  .qty-val{width:18px;text-align:center;font-size:13px;}
+
+  .remove-x{
+    background:none;
+    border:none;
+    color:var(--ink-soft);
+    font-size:16px;
+    cursor:pointer;
+    padding:4px;
+  }
+
+  .empty-state{
+    text-align:center;
+    padding:60px 20px;
+    color:var(--ink-soft);
+  }
+  .empty-state .icon{font-size:40px;margin-bottom:10px;}
+  .empty-state .title{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:17px;color:var(--ink);margin-bottom:4px;}
+
+  /* quick add */
+  .quick-add{
+    display:flex;
+    gap:8px;
+    margin-top:16px;
+  }
+  .quick-add input{
+    flex:1;
+    padding:11px 12px;
+    border-radius:8px;
+    border:1px solid var(--line);
+    background:var(--white);
+    font-family:'Inter',sans-serif;
+    font-size:14px;
+  }
+  .quick-add button{
+    background:var(--teal);
+    color:var(--white);
+    border:none;
+    border-radius:8px;
+    padding:0 16px;
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:14px;
+    cursor:pointer;
+  }
+  .quick-add{flex-wrap:wrap;}
+  .category-select{
+    padding:11px 10px;
+    border-radius:8px;
+    border:1px solid var(--line);
+    background:var(--white);
+    font-family:'Inter',sans-serif;
+    font-size:13px;
+    color:var(--ink);
+    max-width:150px;
+  }
+
+  /* bottom action bar */
+  .action-bar{
+    position:fixed;
+    bottom:0;
+    left:0;
+    right:0;
+    background:var(--white);
+    border-top:1px solid var(--line);
+    padding:10px 14px calc(10px + env(safe-area-inset-bottom));
+    display:flex;
+    gap:8px;
+    max-width:560px;
+    margin:0 auto;
+    z-index:20;
+  }
+  .action-bar button{
+    flex:1;
+    padding:12px;
+    border-radius:8px;
+    border:none;
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:13px;
+    cursor:pointer;
+  }
+  .btn-secondary{
+    background:var(--paper-dark);
+    color:var(--ink);
+  }
+  .btn-primary{
+    background:var(--stamp);
+    color:var(--white);
+  }
+
+  /* catalog view */
+  .search-row{
+    display:flex;
+    gap:8px;
+    margin-bottom:14px;
+  }
+  .search-row input{
+    flex:1;
+    padding:11px 12px;
+    border-radius:8px;
+    border:1px solid var(--line);
+    background:var(--white);
+    font-size:14px;
+  }
+  .catalog-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:10px 0;
+    border-bottom:1px dotted var(--line);
+    cursor:pointer;
+  }
+  .catalog-row .name{flex:1;font-size:14px;}
+  .item-thumb{
+    width:36px;
+    height:36px;
+    border-radius:6px;
+    object-fit:cover;
+    flex-shrink:0;
+    cursor:pointer;
+  }
+  .photo-btn{
+    width:36px;
+    height:36px;
+    border-radius:6px;
+    border:1px dashed var(--line);
+    background:var(--paper);
+    font-size:15px;
+    cursor:pointer;
+    flex-shrink:0;
+  }
+  .catalog-row .add-btn{
+    background:var(--mustard);
+    color:var(--teal);
+    border:none;
+    border-radius:6px;
+    padding:6px 10px;
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:12px;
+    cursor:pointer;
+  }
+  .catalog-row .in-list-badge{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    color:var(--stamp);
+    padding:4px 8px;
+  }
+
+  /* templates / history */
+  .card{
+    background:var(--white);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:14px;
+    margin-bottom:10px;
+  }
+  .card-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+  }
+  .card-title{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px;}
+  .card-sub{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-soft);margin-top:2px;}
+  .card-actions{display:flex;gap:8px;margin-top:10px;}
+  .card-actions button{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:600;
+    font-size:12px;
+    padding:7px 12px;
+    border-radius:6px;
+    border:1px solid var(--line);
+    background:var(--paper);
+    cursor:pointer;
+  }
+  .card-actions button.primary{
+    background:var(--teal);
+    color:var(--white);
+    border:none;
+  }
+  .start-banner{
+    background:var(--teal);
+    color:var(--white);
+    border-radius:12px;
+    padding:16px;
+    margin-bottom:16px;
+  }
+  .start-banner.active{
+    background:var(--white);
+    color:var(--ink);
+    border:1px solid var(--line);
+  }
+  .start-banner-title{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:15px;
+    margin-bottom:4px;
+  }
+  .start-banner-body{
+    font-size:13px;
+    opacity:0.85;
+    margin-bottom:12px;
+    line-height:1.4;
+  }
+  .start-banner-btn{
+    background:var(--mustard);
+    color:var(--teal);
+    border:none;
+    border-radius:8px;
+    padding:9px 16px;
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:13px;
+    cursor:pointer;
+  }
+  .start-banner.active .start-banner-btn{
+    background:var(--teal);
+    color:var(--white);
+  }
+
+  .modal-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(15,59,54,0.5);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:50;
+    padding:20px;
+  }
+  .modal{
+    background:var(--white);
+    border-radius:12px;
+    padding:20px;
+    width:100%;
+    max-width:340px;
+  }
+  .modal h3{margin:0 0 12px;font-family:'Space Grotesk',sans-serif;}
+  .modal input{
+    width:100%;
+    padding:10px;
+    border-radius:8px;
+    border:1px solid var(--line);
+    font-size:14px;
+    margin-bottom:12px;
+  }
+  .modal .modal-actions{display:flex;gap:8px;}
+  .modal .modal-actions button{
+    flex:1;
+    padding:10px;
+    border-radius:8px;
+    border:none;
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    cursor:pointer;
+  }
+
+  .toast{
+    position:fixed;
+    bottom:80px;
+    left:50%;
+    transform:translateX(-50%);
+    background:var(--ink);
+    color:var(--white);
+    padding:10px 18px;
+    border-radius:20px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    z-index:60;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity 0.25s ease, transform 0.25s ease;
+  }
+  .toast.show{
+    opacity:1;
+    transform:translateX(-50%) translateY(-6px);
+  }
+
+  .config-banner{
+    background:#F7D9D2;
+    color:var(--stamp);
+    padding:10px 14px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    text-align:center;
+  }
+</style>
+</head>
+<body>
+
+<div id="config-banner" class="config-banner" style="display:none;">
+  ⚠ Firebase not configured yet — see FIREBASE_SETUP at top of this file's source.
+</div>
+
+<header>
+  <div class="top-row">
+    <div>
+      <h1 id="app-title">La Lista</h1>
+      <div class="sub" id="week-label">SEMANA A SEMANA</div>
+    </div>
+    <div class="top-right">
+      <div class="lang-toggle">
+        <button id="lang-es-btn" onclick="setLang('es')">ES</button>
+        <button id="lang-en-btn" onclick="setLang('en')">EN</button>
+      </div>
+      <div class="name-pill" id="name-pill" onclick="openNameModal()">…</div>
+      <button class="notif-btn" id="notif-btn" onclick="enableNotifications()" title="Notifications">🔔</button>
+    </div>
+  </div>
+  <nav>
+    <button data-view="catalog" class="active" onclick="setView('catalog')" id="nav-catalog"></button>
+    <button data-view="list" onclick="setView('list')" id="nav-list"></button>
+    <button data-view="requests" onclick="setView('requests')" id="nav-requests"></button>
+    <button data-view="history" onclick="setView('history')" id="nav-history"></button>
+  </nav>
+</header>
+
+<main id="main"></main>
+
+<div id="action-bar" class="action-bar" style="display:none;">
+  <button class="btn-primary" id="finish-list-btn" onclick="finishList()" style="flex:1;"></button>
+</div>
+
+<div id="toast" class="toast"></div>
+<div id="modal-root"></div>
+
+<!-- Firebase (compat build — no ES modules, Safari-safe) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+
+<script>
+/* ============================================================
+   FIREBASE_SETUP
+   1. Go to https://console.firebase.google.com → Add project
+   2. Once created, add a Web App inside it (</> icon)
+   3. Enable "Realtime Database" (Build > Realtime Database > Create)
+      - Start in test mode for now, tighten rules before real use:
+        {
+          "rules": { ".read": true, ".write": true }
+        }
+   4. Enable "Storage" (Build > Storage > Get started) — this is what
+      lets you attach reference photos to Nook inventory items.
+      Same test-mode-then-tighten approach for rules.
+   5. Copy the firebaseConfig object it gives you and paste below,
+      replacing the placeholder values.
+   6. Host this single index.html anywhere (GitHub Pages, Netlify,
+      Fasthosts) — no build step needed.
+============================================================ */
+const firebaseConfig = {
+  apiKey: "AIzaSyCD2GmY-VIH8fyNB4QmHWmWndcF1Yv8Vbo",
+  authDomain: "shopping-inventory-40e99.firebaseapp.com",
+  databaseURL: "https://shopping-inventory-40e99-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "shopping-inventory-40e99",
+  storageBucket: "shopping-inventory-40e99.firebasestorage.app",
+  messagingSenderId: "65098224865",
+  appId: "1:65098224865:web:2f28c0c4d868d4405853a0"
+};
+
+let db = null;
+let storage = null;
+let firebaseReady = false;
+try {
+  if (firebaseConfig.apiKey !== "REPLACE_ME") {
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.database();
+    storage = firebase.storage();
+    firebaseReady = true;
+  } else {
+    document.getElementById('config-banner').style.display = 'block';
+  }
+} catch (e) {
+  console.error("Firebase init failed", e);
+  document.getElementById('config-banner').style.display = 'block';
+}
+
+/* ============================================================
+   PUSH NOTIFICATIONS
+   Real push (works even when the app/tab is fully closed) needs:
+   1. Cloud Messaging enabled + a VAPID key pasted in below
+      (Firebase Console → Project Settings → Cloud Messaging →
+      Web Push certificates → Generate key pair)
+   2. firebase-messaging-sw.js hosted at the SAME level as this
+      file, with the same firebaseConfig pasted into it
+   3. The included Cloud Function deployed (see NOTIFICATIONS_SETUP.md)
+      — this is what actually sends the push when new items appear.
+   Without steps 1–3 done, tapping the bell will just fail quietly
+   (or ask for permission) — the rest of the app is unaffected.
+============================================================ */
+const VAPID_KEY = "REPLACE_ME_VAPID_KEY";
+
+function updateNotifBtn(){
+  const btn = document.getElementById('notif-btn');
+  if (!btn) return;
+  const granted = typeof Notification !== 'undefined' && Notification.permission === 'granted' && localStorage.getItem('lalista_notif_token');
+  btn.classList.toggle('enabled', !!granted);
+}
+
+async function enableNotifications(){
+  if (!firebaseReady) { showToast('Configura Firebase primero'); return; }
+  if (typeof Notification === 'undefined') { showToast('Este navegador no soporta notificaciones'); return; }
+  if (VAPID_KEY === "REPLACE_ME_VAPID_KEY") { showToast('Falta configurar la clave VAPID (ver NOTIFICATIONS_SETUP.md)'); return; }
+  try {
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') { showToast('Permiso de notificaciones denegado'); return; }
+    const registration = await navigator.serviceWorker.register('firebase-messaging-sw.js');
+    const messaging = firebase.messaging();
+    const token = await messaging.getToken({ vapidKey: VAPID_KEY, serviceWorkerRegistration: registration });
+    if (token) {
+      await db.ref('deviceTokens/' + token).set({ name: myName, ts: Date.now() });
+      localStorage.setItem('lalista_notif_token', token);
+      updateNotifBtn();
+      showToast('Notificaciones activadas');
+    }
+  } catch (e) {
+    console.error('Notification setup failed', e);
+    showToast('No se pudieron activar las notificaciones');
+  }
+}
+
+// Foreground messages (app open) — show as an in-app toast too
+try {
+  if (firebaseReady && typeof firebase.messaging !== 'undefined' && firebase.messaging.isSupported && firebase.messaging.isSupported()) {
+    firebase.messaging().onMessage((payload)=>{
+      const body = payload && payload.notification && payload.notification.body;
+      if (body) showToast(body);
+    });
+  }
+} catch (e) { /* messaging not supported in this browser — safe to ignore */ }
+
+/* ============================================================
+   LANGUAGE — UI strings + category labels.
+   The list itself is shared data; only the display language
+   is a per-device preference (stored in localStorage).
+============================================================ */
+let lang = localStorage.getItem("lalista_lang") || "es";
+
+const STR = {
+  es: {
+    appSub: "SEMANA A SEMANA",
+    navList: "Lista", navCatalog: "Catálogo", navHistory: "Historial", navRequests: "El Nook",
+    youLabel: "Tú",
+    finishListBtn: "Terminar lista →",
+    emptyListTitle: "Tu lista está vacía",
+    emptyListBody: "Añade artículos desde el Catálogo o escribe algo abajo.",
+    quickAddPlaceholder: "Añadir artículo suelto…",
+    addBtn: "Añadir",
+    markedOf: (done,total)=>`${done} de ${total} marcados`,
+    searchPlaceholder: "Buscar producto…",
+    inList: "✓ en lista",
+    customCatalogPlaceholder: "¿No está en la lista? Añádelo aquí…",
+    itemsCount: (n)=>`${n} artículos`,
+    deleteBtn: "Eliminar",
+    historyEmptyTitle: "Sin historial todavía",
+    historyEmptyBody: "Cuando termines una lista, aparecerá aquí.",
+    completedOf: (done,total)=>`${done} de ${total} completados`,
+    namePrompt: "¿Cómo te llamas? (para ver quién añade qué)",
+    nameChangePrompt: "Cambiar tu nombre:",
+    toastAdded: (n)=>`Añadido: ${n}`,
+    toastEmptyAlready: "La lista ya está vacía",
+    toastFinished: "Lista completada ✓ Empezando una nueva",
+    toastBuiltFromHistory: "Artículos añadidos a tu lista",
+    catalogCountLabel: (n)=>`${n} productos`,
+    startBannerTitleEmpty: "No tienes ninguna lista activa",
+    startBannerBodyEmpty: "Elige artículos de abajo o añade algo suelto para empezar tu lista de esta semana.",
+    startBannerBtn: "Empezar lista",
+    startBannerTitleActive: (n)=>`Tienes ${n} artículo${n===1?'':'s'} en tu lista`,
+    startBannerBtnActive: "Ver mi lista →",
+    buildRegularBtn: "Crear lista habitual desde aquí",
+    listStartedLabel: (d)=>`Empezada: ${d}`,
+    addMoreFromCatalogBtn: "+ Añadir más desde el Catálogo",
+    requestsEmptyTitle: "Sin avisos de El Nook",
+    requestsEmptyBody: "Cuando Iskra avise de que falta algo, aparecerá aquí.",
+    requestInputPlaceholder: "¿Qué hace falta en El Nook?",
+    requestSubmitBtn: "Avisar",
+    requestedByPrefix: "Avisado por",
+    requestAddToListBtn: "Comprar nuevo",
+    requestDismissBtn: "Usar de reserva",
+    toastRequestSubmitted: "Aviso enviado",
+    toastRequestAdded: "Marcado como compra nueva",
+    toastRequestDismissed: "Marcado como que ya tenemos",
+    toastUploadingPhoto: "Subiendo foto…",
+    toastPhotoSaved: "Foto guardada",
+    toastPhotoFailed: "No se pudo subir la foto",
+    toastPhotoNeedsFirebase: "Configura Firebase Storage primero",
+    addPhotoLabel: "Añadir foto",
+    requestsPendingHeading: "Avisos pendientes",
+    nookInventoryHeading: "Inventario de El Nook",
+    stream_welcome: "Bienvenida",
+    stream_breakable: "Roturas y reemplazos",
+    stream_consumable: "Suministros (nivel bajo)",
+    welcomeSectionHint: "Lo que se repone para cada huésped. La leche se repone siempre; lo demás solo si se ha usado.",
+    breakableSectionHint: "Avisa si algo se ha roto, perdido o dañado.",
+    consumableSectionHint: "Avisa cuando algo se esté acabando.",
+    alwaysReplaceNote: "🔁 se repone siempre",
+    parLabel: (n)=>`Habitual: ${n}`,
+    supplierBagsHeading: "Bolsas de proveedor (por comprar)",
+    noSupplierLabel: "Sin proveedor",
+    locale: "es-ES"
+  },
+  en: {
+    appSub: "WEEK BY WEEK",
+    navList: "List", navCatalog: "Catalog", navHistory: "History", navRequests: "El Nook",
+    youLabel: "You",
+    finishListBtn: "Finish list →",
+    emptyListTitle: "Your list is empty",
+    emptyListBody: "Add items from the Catalog or type something below.",
+    quickAddPlaceholder: "Add a loose item…",
+    addBtn: "Add",
+    markedOf: (done,total)=>`${done} of ${total} checked`,
+    searchPlaceholder: "Search products…",
+    inList: "✓ in list",
+    customCatalogPlaceholder: "Not on the list? Add it here…",
+    itemsCount: (n)=>`${n} items`,
+    deleteBtn: "Delete",
+    historyEmptyTitle: "No history yet",
+    historyEmptyBody: "When you finish a list, it'll show up here.",
+    completedOf: (done,total)=>`${done} of ${total} completed`,
+    namePrompt: "What's your name? (so we can see who added what)",
+    nameChangePrompt: "Change your name:",
+    toastAdded: (n)=>`Added: ${n}`,
+    toastEmptyAlready: "The list is already empty",
+    toastFinished: "List completed ✓ Starting a new one",
+    toastBuiltFromHistory: "Items added to your list",
+    catalogCountLabel: (n)=>`${n} products`,
+    startBannerTitleEmpty: "You don't have an active list",
+    startBannerBodyEmpty: "Pick items below or add something loose to start this week's list.",
+    startBannerBtn: "Start list",
+    startBannerTitleActive: (n)=>`You have ${n} item${n===1?'':'s'} in your list`,
+    startBannerBtnActive: "See my list →",
+    buildRegularBtn: "Build regular list from this",
+    listStartedLabel: (d)=>`Started: ${d}`,
+    addMoreFromCatalogBtn: "+ Add more from the Catalog",
+    requestsEmptyTitle: "No flags from El Nook",
+    requestsEmptyBody: "When Iskra flags something as needed, it'll show up here.",
+    requestInputPlaceholder: "What's needed at El Nook?",
+    requestSubmitBtn: "Flag it",
+    requestedByPrefix: "Flagged by",
+    requestAddToListBtn: "Buy new",
+    requestDismissBtn: "Get from stock",
+    toastRequestSubmitted: "Flagged",
+    toastRequestAdded: "Marked as buy new",
+    toastRequestDismissed: "Marked as already in stock",
+    toastUploadingPhoto: "Uploading photo…",
+    toastPhotoSaved: "Photo saved",
+    toastPhotoFailed: "Couldn't upload the photo",
+    toastPhotoNeedsFirebase: "Set up Firebase Storage first",
+    addPhotoLabel: "Add photo",
+    requestsPendingHeading: "Pending flags",
+    nookInventoryHeading: "El Nook inventory",
+    stream_welcome: "Welcome supplies",
+    stream_breakable: "Breakages & replacements",
+    stream_consumable: "Supplies (running low)",
+    welcomeSectionHint: "What's restocked for each guest. Milk is always replaced; the rest only if it was used.",
+    breakableSectionHint: "Flag anything broken, lost, or damaged.",
+    consumableSectionHint: "Flag anything that's running low.",
+    alwaysReplaceNote: "🔁 always replaced",
+    parLabel: (n)=>`Standard: ${n}`,
+    supplierBagsHeading: "Supplier bags (to buy)",
+    noSupplierLabel: "No supplier set",
+    locale: "en-GB"
+  }
+};
+function t(key){ return STR[lang][key]; }
+
+const CATEGORY_ORDER = ["produce","bakery","dairy","meat","seafood","pantry","frozen","drinks","snacks","household","hygiene","baby","pets","amenities","other"];
+const CATEGORY_ICONS = {
+  produce:"🥬", bakery:"🍞", dairy:"🥚", meat:"🍗", seafood:"🐟",
+  pantry:"🥫", frozen:"🧊", drinks:"🥤", snacks:"🍫",
+  household:"🧽", hygiene:"🧻", baby:"🍼", pets:"🐾", amenities:"🏡", other:"🛒"
+};
+const CATEGORY_LABEL = {
+  produce:{es:"Frutas y Verduras", en:"Fruit & Veg"},
+  bakery:{es:"Panadería", en:"Bakery"},
+  dairy:{es:"Lácteos y Huevos", en:"Dairy & Eggs"},
+  meat:{es:"Carne y Aves", en:"Meat & Poultry"},
+  seafood:{es:"Pescado y Marisco", en:"Fish & Seafood"},
+  pantry:{es:"Despensa", en:"Food Cupboard"},
+  frozen:{es:"Congelados", en:"Frozen"},
+  drinks:{es:"Bebidas", en:"Drinks"},
+  snacks:{es:"Snacks y Dulces", en:"Snacks & Sweets"},
+  household:{es:"Limpieza del Hogar", en:"Household Cleaning"},
+  hygiene:{es:"Higiene y Cuidado Personal", en:"Health & Beauty"},
+  baby:{es:"Bebé", en:"Baby"},
+  pets:{es:"Mascotas", en:"Pets"},
+  amenities:{es:"Bienvenida y Extras", en:"Welcome & Extras"},
+  other:{es:"Otros", en:"Other"}
+};
+function categoryLabel(catId){ return CATEGORY_LABEL[catId] ? CATEGORY_LABEL[catId][lang] : catId; }
+
+/* ============================================================
+   SEED CATALOG — comprehensive generic online-shop style list
+   (not tied to any single retailer's real product data).
+   Each item has an ES and EN name; category is a canonical id
+   so translation never touches the shared data model.
+============================================================ */
+const SEED_CATALOG = [
+  // Frutas y Verduras / Fruit & Veg
+  ["Plátanos","Bananas","produce"],["Manzanas","Apples","produce"],["Naranjas","Oranges","produce"],
+  ["Uvas","Grapes","produce"],["Fresas","Strawberries","produce"],["Tomates","Tomatoes","produce"],
+  ["Cebollas","Onions","produce"],["Ajos","Garlic","produce"],["Pimientos","Peppers","produce"],
+  ["Zanahorias","Carrots","produce"],["Pepino","Cucumber","produce"],["Lechuga","Lettuce","produce"],
+  ["Espinacas","Spinach","produce"],["Champiñones","Mushrooms","produce"],["Patatas","Potatoes","produce"],
+  ["Aguacates","Avocados","produce"],["Limones","Lemons","produce"],["Calabacín","Courgette","produce"],
+  ["Brócoli","Broccoli","produce"],
+  // Panadería / Bakery
+  ["Pan de barra","Baguette","bakery"],["Pan de molde","Sliced bread","bakery"],
+  ["Pan integral","Wholemeal bread","bakery"],["Croissants","Croissants","bakery"],
+  ["Magdalenas","Muffins","bakery"],["Bollos","Bread rolls","bakery"],
+  ["Tostadas","Rusks","bakery"],["Bizcocho","Sponge cake","bakery"],
+  // Lácteos y Huevos / Dairy & Eggs
+  ["Leche entera","Whole milk","dairy"],["Leche desnatada","Skimmed milk","dairy"],
+  ["Leche sin lactosa","Lactose-free milk","dairy"],["Huevos (docena)","Eggs (dozen)","dairy"],
+  ["Yogures naturales","Natural yogurt","dairy"],["Yogur griego","Greek yogurt","dairy"],
+  ["Queso curado","Cured cheese","dairy"],["Queso rallado","Grated cheese","dairy"],
+  ["Queso en lonchas","Sliced cheese","dairy"],["Mantequilla","Butter","dairy"],
+  ["Nata para cocinar","Cooking cream","dairy"],
+  // Carne y Aves / Meat & Poultry
+  ["Pechuga de pollo","Chicken breast","meat"],["Muslos de pollo","Chicken thighs","meat"],
+  ["Carne picada","Minced meat","meat"],["Lomo de cerdo","Pork loin","meat"],
+  ["Salchichas","Sausages","meat"],["Bacon","Bacon","meat"],["Pavo","Turkey","meat"],
+  ["Jamón cocido","Cooked ham","meat"],["Jamón serrano","Serrano ham","meat"],["Chorizo","Chorizo","meat"],
+  // Pescado y Marisco / Fish & Seafood
+  ["Salmón","Salmon","seafood"],["Gambas","Prawns","seafood"],["Merluza","Hake","seafood"],
+  ["Bacalao","Cod","seafood"],["Atún fresco","Fresh tuna","seafood"],["Mejillones","Mussels","seafood"],
+  // Despensa / Food Cupboard
+  ["Arroz","Rice","pantry"],["Pasta","Pasta","pantry"],["Aceite de oliva","Olive oil","pantry"],
+  ["Vinagre","Vinegar","pantry"],["Sal","Salt","pantry"],["Azúcar","Sugar","pantry"],
+  ["Harina","Flour","pantry"],["Levadura","Baking powder","pantry"],["Café","Coffee","pantry"],
+  ["Té","Tea","pantry"],["Cereales","Cereal","pantry"],["Atún en lata","Canned tuna","pantry"],
+  ["Legumbres en bote","Canned pulses","pantry"],["Garbanzos secos","Dried chickpeas","pantry"],
+  ["Lentejas","Lentils","pantry"],["Tomate frito","Tomato sauce","pantry"],["Mayonesa","Mayonnaise","pantry"],
+  ["Ketchup","Ketchup","pantry"],["Mostaza","Mustard","pantry"],["Caldo","Stock","pantry"],
+  ["Especias","Spices","pantry"],["Miel","Honey","pantry"],["Mermelada","Jam","pantry"],
+  ["Pan rallado","Breadcrumbs","pantry"],
+  // Congelados / Frozen
+  ["Verduras congeladas","Frozen vegetables","frozen"],["Patatas fritas congeladas","Frozen fries","frozen"],
+  ["Pizza congelada","Frozen pizza","frozen"],["Helado","Ice cream","frozen"],
+  ["Croquetas congeladas","Frozen croquettes","frozen"],["Gambas congeladas","Frozen prawns","frozen"],
+  ["Palitos de pescado","Fish fingers","frozen"],["Masa de hojaldre","Frozen pastry","frozen"],
+  // Bebidas / Drinks
+  ["Agua (pack)","Water (pack)","drinks"],["Cerveza","Beer","drinks"],["Vino","Wine","drinks"],
+  ["Zumo","Juice","drinks"],["Refrescos","Soft drinks","drinks"],["Leche de almendra","Almond milk","drinks"],
+  ["Cacao soluble","Hot chocolate powder","drinks"],["Café en cápsulas","Coffee pods","drinks"],
+  ["Tónica","Tonic water","drinks"],["Bebida isotónica","Sports drink","drinks"],
+  // Snacks y Dulces / Snacks & Sweets
+  ["Patatas fritas (snack)","Crisps","snacks"],["Chocolate","Chocolate","snacks"],
+  ["Galletas","Biscuits","snacks"],["Frutos secos","Nuts","snacks"],["Palomitas","Popcorn","snacks"],
+  ["Barritas de cereales","Cereal bars","snacks"],["Aceitunas","Olives","snacks"],["Gominolas","Sweets","snacks"],
+  // Limpieza del Hogar / Household Cleaning
+  ["Detergente","Laundry detergent","household"],["Suavizante","Fabric softener","household"],
+  ["Lavavajillas","Dishwasher soap","household"],["Lejía","Bleach","household"],
+  ["Limpiador multiusos","All-purpose cleaner","household"],["Limpiacristales","Glass cleaner","household"],
+  ["Friegasuelos","Floor cleaner","household"],["Estropajos","Scourers","household"],
+  ["Guantes de fregar","Rubber gloves","household"],["Bayetas","Cloths","household"],
+  ["Ambientador","Air freshener","household"],["Bolsas de basura","Bin bags","household"],
+  ["Papel de cocina","Kitchen roll","household"],["Pilas","Batteries","household"],
+  // Higiene y Cuidado Personal / Health & Beauty
+  ["Papel higiénico","Toilet paper","hygiene"],["Pañuelos de papel","Tissues","hygiene"],
+  ["Toallitas húmedas","Wet wipes","hygiene"],["Compresas","Sanitary pads","hygiene"],
+  ["Tampones","Tampons","hygiene"],["Gel de ducha","Shower gel","hygiene"],
+  ["Champú","Shampoo","hygiene"],["Acondicionador","Conditioner","hygiene"],
+  ["Desodorante","Deodorant","hygiene"],["Pasta de dientes","Toothpaste","hygiene"],
+  ["Cepillo de dientes","Toothbrush","hygiene"],["Maquinillas de afeitar","Razors","hygiene"],
+  ["Crema hidratante","Moisturiser","hygiene"],["Bastoncillos","Cotton buds","hygiene"],
+  // Bebé / Baby
+  ["Pañales","Nappies","baby"],["Toallitas para bebé","Baby wipes","baby"],
+  ["Leche infantil","Baby formula","baby"],["Potitos","Baby food jars","baby"],
+  ["Papilla de cereales","Baby cereal","baby"],["Champú infantil","Baby shampoo","baby"],
+  // Mascotas / Pets
+  ["Pienso para perro","Dog food","pets"],["Pienso para gato","Cat food","pets"],
+  ["Arena para gatos","Cat litter","pets"],["Snacks para perro","Dog treats","pets"],
+  ["Latas para gato","Wet cat food","pets"],["Bolsas para excrementos","Poop bags","pets"]
+].map((r,i)=>({id:"seed-"+i, name_es:r[0], name_en:r[1], category:r[2]}));
+
+/* ============================================================
+   NOOK SEED CATALOG — starter inventory for El Nook (the Airbnb).
+   Each item belongs to one of three streams, which drives how
+   it behaves in the app:
+   - "welcome"    per-guest standard supply with a par quantity
+                  (e.g. cava x1, beer x2). Milk is alwaysReplace:
+                  true, meaning it should be flagged every single
+                  turnover regardless of whether it was used.
+                  Other welcome items are only flagged if the
+                  Iskra marks them as used this stay.
+   - "breakable"  durable items (bedding, crockery, cutlery) that
+                  get reported only when something's broken/lost.
+   - "consumable" household supplies that just get low over time
+                  and need reordering (cleaning products, bin
+                  bags, batteries, etc).
+   Placeholder items to get started — replace/extend once you've
+   photographed the actual stock; edit this array directly, or
+   add real items via "not in the Nook list?" in the app itself
+   (those get saved into the shared nookCustomCatalog instead).
+============================================================ */
+const NOOK_SEED_CATALOG = [
+  // Bienvenida — reposición estándar por huésped / Welcome — standard per-guest restock
+  ["Cava","Cava","drinks","welcome",1,false],
+  ["Cerveza","Beer","drinks","welcome",2,false],
+  ["Leche","Milk","dairy","welcome",1,true],
+  // Roturas y reemplazos / Breakages & replacements
+  // Bedding: 3 sets, each = 4 pillowcases, mattress protector, 2 pillow
+  // protectors, fitted sheet, flat sheet, quilt cover — par qty = 3x that.
+  ["Fundas de almohada","Pillowcases","amenities","breakable",12,false,"Dunnes"],
+  ["Protector de colchón","Mattress protector","amenities","breakable",3,false,"Dunnes"],
+  ["Protector de almohada","Pillow protector","amenities","breakable",6,false,"Dunnes"],
+  ["Bajera ajustable","Fitted sheet","amenities","breakable",3,false,"Dunnes"],
+  ["Sábana encimera","Flat sheet","amenities","breakable",3,false,"Dunnes"],
+  ["Funda nórdica","Quilt cover","amenities","breakable",3,false,"Dunnes"],
+  // Towels: 3 sets, each = 2 large bath, 2 medium, 1 hand towel
+  ["Toalla de baño grande","Large bath towel","amenities","breakable",6,false,"Yorkshire Linen"],
+  ["Toalla mediana","Medium towel","amenities","breakable",6,false,"Yorkshire Linen"],
+  ["Toalla de manos","Hand towel","amenities","breakable",3,false,"Yorkshire Linen"],
+  ["Vajilla (platos)","Crockery (plates)","amenities","breakable",1,false,""],
+  ["Tazas","Mugs","amenities","breakable",1,false,""],
+  ["Vasos","Glasses","amenities","breakable",1,false,""],
+  ["Cuchillos","Knives","amenities","breakable",1,false,""],
+  ["Tenedores","Forks","amenities","breakable",1,false,""],
+  ["Cucharas","Spoons","amenities","breakable",1,false,""],
+  // Suministros — nivel bajo / Consumables — running low
+  ["Vino tinto","Red wine","drinks","consumable",1,false],
+  ["Vino blanco","White wine","drinks","consumable",1,false],
+  ["Agua embotellada","Bottled water","drinks","consumable",1,false],
+  ["Café en cápsulas","Coffee pods","drinks","consumable",1,false],
+  ["Té","Tea","drinks","consumable",1,false],
+  ["Azúcar (sobres)","Sugar sachets","pantry","consumable",1,false],
+  ["Aceite de oliva","Olive oil","pantry","consumable",1,false],
+  ["Sal","Salt","pantry","consumable",1,false],
+  ["Papel higiénico","Toilet paper","hygiene","consumable",1,false],
+  ["Jabón de manos","Hand soap","hygiene","consumable",1,false],
+  ["Champú (mini)","Shampoo (mini)","hygiene","consumable",1,false],
+  ["Gel de ducha (mini)","Shower gel (mini)","hygiene","consumable",1,false],
+  ["Bolsas de basura (grandes)","Bin bags (large)","household","consumable",1,false],
+  ["Bolsas de basura (pequeñas)","Small bin bags","household","consumable",1,false],
+  ["Detergente lavavajillas","Dishwasher tablets","household","consumable",1,false],
+  ["Papel de cocina","Kitchen roll","household","consumable",1,false],
+  ["Ambientador","Air freshener","household","consumable",1,false],
+  ["Lejía","Bleach","household","consumable",1,false],
+  ["Limpiador de suelos","Floor cleaner","household","consumable",1,false],
+  ["Bolsas para aspiradora","Vacuum bags","household","consumable",1,false],
+  ["Cápsulas lavadora","Laundry pods","household","consumable",1,false],
+  ["Bombillas","Light bulbs","amenities","consumable",1,false],
+  ["Pilas","Batteries","amenities","consumable",1,false],
+  ["Botiquín (tiritas)","First aid (plasters)","amenities","consumable",1,false],
+  ["Snacks de bienvenida","Welcome snacks","amenities","consumable",1,false]
+].map((r,i)=>({id:"nookseed-"+i, name_es:r[0], name_en:r[1], category:r[2], stream:r[3], parQty:r[4], alwaysReplace:r[5], supplier:r[6]||""}));
+
+function catalogName(item){ return lang === 'en' ? (item.name_en || item.name_es) : (item.name_es || item.name_en); }
+
+/* ============================================================
+   STATE
+============================================================ */
+let currentList = {};   // itemId -> {name_es,name_en,category,qty,checked,addedBy,ts}
+let customCatalog = {}; // itemId -> {name_es,name_en,category}
+let nookCustomCatalog = {}; // itemId -> {name_es,name_en,category} (extra items added to El Nook's own list)
+let history = {};       // listId -> {completedAt,items:[]}
+let requests = {};      // requestId -> {name_es,name_en,category,stream,supplier,qty,requestedBy,ts} (El Nook)
+let supplierOrders = {}; // orderId -> {name_es,name_en,supplier,qty,ts} (El Nook breakables to buy new)
+let nookItemPhotos = {}; // itemId (seed or custom) -> download URL, reference photo for El Nook items
+let view = "catalog";
+let catalogSearch = "";
+let collapsedCategories = {}; // catId -> true (collapsed) — default all collapsed
+CATEGORY_ORDER.forEach(c=>{ collapsedCategories[c] = true; });
+let myName = localStorage.getItem("lalista_myname") || "";
+
+function applyStaticText(){
+  document.getElementById('week-label').textContent = t('appSub');
+  document.getElementById('nav-list').textContent = t('navList');
+  document.getElementById('nav-catalog').textContent = t('navCatalog');
+  document.getElementById('nav-history').textContent = t('navHistory');
+  updateRequestsBadge();
+  document.getElementById('finish-list-btn').textContent = t('finishListBtn');
+  document.getElementById('name-pill').textContent = t('youLabel') + ": " + myName;
+  document.getElementById('lang-es-btn').classList.toggle('active', lang==='es');
+  document.getElementById('lang-en-btn').classList.toggle('active', lang==='en');
+  document.documentElement.lang = lang;
+}
+function setLang(l){
+  lang = l;
+  localStorage.setItem("lalista_lang", l);
+  applyStaticText();
+  render();
+}
+
+if (!myName) {
+  myName = prompt(STR[lang].namePrompt) || (lang==='en' ? "Me" : "Yo");
+  localStorage.setItem("lalista_myname", myName);
+}
+applyStaticText();
+updateNotifBtn();
+
+function openNameModal(){
+  const n = prompt(t('nameChangePrompt'), myName);
+  if (n) { myName = n; localStorage.setItem("lalista_myname", myName); applyStaticText(); }
+}
+
+/* ============================================================
+   FIREBASE SYNC (real-time listeners)
+============================================================ */
+if (firebaseReady) {
+  db.ref("currentList").on("value", snap => { currentList = snap.val() || {}; render(); });
+  db.ref("customCatalog").on("value", snap => { customCatalog = snap.val() || {}; render(); });
+  db.ref("nookCustomCatalog").on("value", snap => { nookCustomCatalog = snap.val() || {}; render(); });
+  db.ref("history").on("value", snap => { history = snap.val() || {}; render(); });
+  db.ref("requests").on("value", snap => { requests = snap.val() || {}; render(); updateRequestsBadge(); });
+  db.ref("supplierOrders").on("value", snap => { supplierOrders = snap.val() || {}; render(); });
+  db.ref("nookItemPhotos").on("value", snap => { nookItemPhotos = snap.val() || {}; render(); });
+} else {
+  // local-only fallback so the UI is still usable/demoable without Firebase configured
+  render();
+}
+
+function saveCurrentList(){ if(firebaseReady) db.ref("currentList").set(currentList); else render(); }
+function saveCustomCatalog(){ if(firebaseReady) db.ref("customCatalog").set(customCatalog); else render(); }
+function saveNookCustomCatalog(){ if(firebaseReady) db.ref("nookCustomCatalog").set(nookCustomCatalog); else render(); }
+function saveHistory(){ if(firebaseReady) db.ref("history").set(history); else render(); }
+function saveRequests(){ if(firebaseReady) db.ref("requests").set(requests); else render(); updateRequestsBadge(); }
+function saveSupplierOrders(){ if(firebaseReady) db.ref("supplierOrders").set(supplierOrders); else render(); }
+function saveNookItemPhotos(){ if(firebaseReady) db.ref("nookItemPhotos").set(nookItemPhotos); else render(); }
+function updateRequestsBadge(){
+  const n = Object.keys(requests).length;
+  const btn = document.getElementById('nav-requests');
+  if (!btn) return;
+  btn.textContent = n > 0 ? `${t('navRequests')} (${n})` : t('navRequests');
+}
+
+/* ============================================================
+   HELPERS
+============================================================ */
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+function fullCatalog(){ return SEED_CATALOG.concat(Object.entries(customCatalog).map(([id,v])=>({id, ...v}))); }
+function fullNookCatalog(){ return NOOK_SEED_CATALOG.concat(Object.entries(nookCustomCatalog).map(([id,v])=>({id, ...v}))); }
+function showToast(msg){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(()=>el.classList.remove('show'), 1600);
+}
+
+function addCatalogItemToList(item){
+  const existing = Object.entries(currentList).find(([id,v]) => v.name_es === item.name_es && v.category === item.category);
+  if (existing) {
+    currentList[existing[0]].qty += 1;
+  } else {
+    currentList[uid()] = { name_es:item.name_es, name_en:item.name_en, category:item.category, qty:1, checked:false, addedBy:myName, ts:Date.now() };
+  }
+  saveCurrentList();
+  showToast(t('toastAdded')(catalogName(item)));
+}
+
+function changeCatalogQty(name_es, category, delta){
+  const found = Object.entries(currentList).find(([id,v]) => v.name_es === name_es && v.category === category);
+  if (!found) return;
+  const [id, v] = found;
+  const newQty = (v.qty||1) + delta;
+  if (newQty <= 0) delete currentList[id];
+  else currentList[id].qty = newQty;
+  saveCurrentList();
+}
+
+/* ============================================================
+   TRANSLATION — when someone adds a custom item, translate it
+   into the other language so everyone sees it correctly no
+   matter which language they've got the app set to.
+   Uses the free MyMemory API; falls back to the original text
+   (shown in both languages) if the request fails.
+============================================================ */
+async function translateText(text, from, to){
+  if (!text || from === to) return text;
+  // Primary: Google's public translate endpoint (no key, broad CORS support in practice)
+  try {
+    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${from}&tl=${to}&dt=t&q=${encodeURIComponent(text)}`;
+    const resp = await fetch(url);
+    const data = await resp.json();
+    const translated = data && data[0] && data[0].map(seg => seg[0]).join('');
+    if (translated) return translated;
+  } catch (e) {
+    console.warn('Primary translation failed, trying fallback provider', e);
+  }
+  // Fallback: MyMemory
+  try {
+    const url2 = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${from}|${to}`;
+    const resp2 = await fetch(url2);
+    const data2 = await resp2.json();
+    const translated2 = data2 && data2.responseData && data2.responseData.translatedText;
+    if (translated2 && !/invalid|no translation/i.test(translated2)) return translated2;
+  } catch (e) {
+    console.warn('Fallback translation also failed, using original text', e);
+  }
+  return text;
+}
+async function buildBilingualNames(name){
+  const otherLang = lang === 'es' ? 'en' : 'es';
+  const translated = await translateText(name, lang, otherLang);
+  return lang === 'es'
+    ? { name_es: name, name_en: translated }
+    : { name_es: translated, name_en: name };
+}
+
+async function addCustomItem(name, category){
+  name = name.trim();
+  if (!name) return;
+  category = category || "other";
+  const {name_es, name_en} = await buildBilingualNames(name);
+  currentList[uid()] = { name_es, name_en, category:category, qty:1, checked:false, addedBy:myName, ts:Date.now() };
+  saveCurrentList();
+  showToast(t('toastAdded')(lang==='en' ? name_en : name_es));
+}
+
+function categorySelectHtml(selectId){
+  const opts = CATEGORY_ORDER.map(cat=>`<option value="${cat}">${CATEGORY_ICONS[cat]||''} ${categoryLabel(cat)}</option>`).join('');
+  return `<select id="${selectId}" class="category-select">${opts}</select>`;
+}
+
+const STREAM_ORDER = ["welcome","breakable","consumable"];
+const STREAM_ICONS = { welcome:"🥂", breakable:"🔧", consumable:"🧴" };
+function streamLabel(stream){ return t('stream_'+stream); }
+function streamSelectHtml(selectId){
+  const opts = STREAM_ORDER.map(s=>`<option value="${s}">${STREAM_ICONS[s]} ${streamLabel(s)}</option>`).join('');
+  return `<select id="${selectId}" class="category-select">${opts}</select>`;
+}
+
+function toggleCheck(id){
+  currentList[id].checked = !currentList[id].checked;
+  saveCurrentList();
+}
+function changeQty(id, delta){
+  currentList[id].qty = Math.max(1, (currentList[id].qty||1) + delta);
+  saveCurrentList();
+}
+function removeItem(id){
+  delete currentList[id];
+  saveCurrentList();
+}
+
+function finishList(){
+  const items = Object.values(currentList);
+  if (items.length === 0) { showToast(t('toastEmptyAlready')); return; }
+  const listId = uid();
+  history[listId] = { completedAt: Date.now(), items };
+  currentList = {};
+  saveHistory();
+  saveCurrentList();
+  showToast(t('toastFinished'));
+  setView('catalog');
+}
+
+function buildRegularListFromHistory(id){
+  const h = history[id];
+  if (!h) return;
+  h.items.forEach(it=>{
+    const existing = Object.entries(currentList).find(([id2,v]) => v.name_es === it.name_es && v.category === it.category);
+    if (existing) currentList[existing[0]].qty += (it.qty||1);
+    else currentList[uid()] = { name_es:it.name_es, name_en:it.name_en||it.name_es, category:it.category, qty:it.qty||1, checked:false, addedBy:myName, ts:Date.now() };
+  });
+  saveCurrentList();
+  showToast(t('toastBuiltFromHistory'));
+  setView('list');
+}
+
+function renderModal(html){
+  document.getElementById('modal-root').innerHTML = `<div class="modal-overlay" onclick="if(event.target===this)closeModal()"><div class="modal">${html}</div></div>`;
+}
+function closeModal(){ document.getElementById('modal-root').innerHTML = ""; }
+
+function setView(v){
+  view = v;
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active', b.dataset.view===v));
+  document.getElementById('action-bar').style.display = (v==='list') ? 'flex' : 'none';
+  render();
+}
+
+function toggleCategoryCollapse(catId){
+  collapsedCategories[catId] = !collapsedCategories[catId];
+  render();
+}
+
+/* ============================================================
+   RENDER
+============================================================ */
+function render(){
+  const main = document.getElementById('main');
+  if (view === 'list') main.innerHTML = renderListView();
+  else if (view === 'catalog') main.innerHTML = renderCatalogView();
+  else if (view === 'requests') main.innerHTML = renderRequestsView();
+  else if (view === 'history') main.innerHTML = renderHistoryView();
+}
+
+function renderListView(){
+  const items = Object.entries(currentList);
+  const total = items.length;
+  const done = items.filter(([,v])=>v.checked).length;
+
+  if (total === 0) {
+    return `
+      <div class="empty-state">
+        <div class="icon">🧺</div>
+        <div class="title">${t('emptyListTitle')}</div>
+        <div>${t('emptyListBody')}</div>
+      </div>
+      <div class="quick-add">
+        <input id="quick-add-input" placeholder="${t('quickAddPlaceholder')}" onkeydown="if(event.key==='Enter')quickAddSubmit()" />
+        ${categorySelectHtml('quick-add-category')}
+        <button onclick="quickAddSubmit()">${t('addBtn')}</button>
+      </div>
+      <button class="add-more-link" onclick="setView('catalog')">${t('addMoreFromCatalogBtn')}</button>
+    `;
+  }
+
+  const byCategory = {};
+  items.forEach(([id,v])=>{ (byCategory[v.category] = byCategory[v.category]||[]).push([id,v]); });
+
+  const startedAt = Math.min(...items.map(([,v])=>v.ts||Date.now()));
+  const startedLabel = new Date(startedAt).toLocaleString(t('locale'), {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'});
+
+  let html = `
+    <div class="list-header-row">
+      <span class="list-started">${t('listStartedLabel')(startedLabel)}</span>
+      <button class="add-more-link" onclick="setView('catalog')">${t('addMoreFromCatalogBtn')}</button>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-label"><span>${t('markedOf')(done,total)}</span><span class="mono">${Math.round(done/total*100)}%</span></div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${done/total*100}%"></div></div>
+    </div>
+  `;
+
+  CATEGORY_ORDER.forEach(cat=>{
+    if (!byCategory[cat]) return;
+    html += `<div class="category-block">
+      <div class="category-head">${CATEGORY_ICONS[cat]||'🛒'} ${categoryLabel(cat)}</div>`;
+    byCategory[cat].sort((a,b)=> (a[1].checked===b[1].checked)?0:(a[1].checked?1:-1)).forEach(([id,v])=>{
+      const displayName = lang === 'en' ? (v.name_en||v.name_es) : (v.name_es||v.name_en);
+      html += `
+        <div class="item-row">
+          <div class="stamp-box ${v.checked?'checked':''}" onclick="toggleCheck('${id}')">
+            ${v.checked ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>' : ''}
+          </div>
+          <div class="item-info">
+            <div class="item-name ${v.checked?'checked':''}">${displayName}</div>
+            <div class="item-meta">
+              <span class="added-by">${v.addedBy||''}</span>
+            </div>
+          </div>
+          <div class="qty-stepper">
+            <button onclick="changeQty('${id}',-1)">−</button>
+            <span class="qty-val">${v.qty}</span>
+            <button onclick="changeQty('${id}',1)">+</button>
+          </div>
+          <button class="remove-x" onclick="removeItem('${id}')">✕</button>
+        </div>
+      `;
+    });
+    html += `</div>`;
+  });
+
+  html += `
+    <div class="quick-add">
+      <input id="quick-add-input" placeholder="${t('quickAddPlaceholder')}" onkeydown="if(event.key==='Enter')quickAddSubmit()" />
+      ${categorySelectHtml('quick-add-category')}
+      <button onclick="quickAddSubmit()">${t('addBtn')}</button>
+    </div>
+  `;
+  return html;
+}
+
+async function quickAddSubmit(){
+  const inp = document.getElementById('quick-add-input');
+  const catSel = document.getElementById('quick-add-category');
+  if (!inp || !inp.value.trim()) return;
+  const name = inp.value;
+  const category = catSel ? catSel.value : 'other';
+  inp.value = '';
+  await addCustomItem(name, category);
+}
+
+function renderCatalogView(){
+  const searching = !!catalogSearch;
+  const currentCount = Object.keys(currentList).length;
+  const banner = currentCount === 0
+    ? `<div class="start-banner">
+         <div class="start-banner-title">${t('startBannerTitleEmpty')}</div>
+         <div class="start-banner-body">${t('startBannerBodyEmpty')}</div>
+         <button class="start-banner-btn" onclick="document.getElementById('catalog-search-input').focus()">${t('startBannerBtn')}</button>
+       </div>`
+    : `<div class="start-banner active">
+         <div class="start-banner-title">${t('startBannerTitleActive')(currentCount)}</div>
+         <button class="start-banner-btn" onclick="setView('list')">${t('startBannerBtnActive')}</button>
+       </div>`;
+  const all = fullCatalog().filter(it=>{
+    if (catalogSearch) {
+      const q = catalogSearch.toLowerCase();
+      return (it.name_es||'').toLowerCase().includes(q) || (it.name_en||'').toLowerCase().includes(q);
+    }
+    return true;
+  });
+  const byCategory = {};
+  all.forEach(it=>{ (byCategory[it.category] = byCategory[it.category]||[]).push(it); });
+
+  let html = `
+    ${banner}
+    <div class="search-row">
+      <input id="catalog-search-input" placeholder="${t('searchPlaceholder')}" value="${catalogSearch}" oninput="catalogSearch=this.value; render();" />
+    </div>
+    <div class="quick-add" style="margin-bottom:20px;">
+      <input id="custom-catalog-input" placeholder="${t('customCatalogPlaceholder')}" onkeydown="if(event.key==='Enter')addCustomToCatalogAndList()" />
+      ${categorySelectHtml('custom-catalog-category')}
+      <button onclick="addCustomToCatalogAndList()">${t('addBtn')}</button>
+    </div>
+  `;
+
+  CATEGORY_ORDER.forEach(cat=>{
+    if (!byCategory[cat]) return;
+    const isOpen = searching || !collapsedCategories[cat];
+    html += `<div class="category-block">
+      <div class="category-head clickable" onclick="toggleCategoryCollapse('${cat}')">
+        ${CATEGORY_ICONS[cat]||'🛒'} ${categoryLabel(cat)}
+        <span class="count">&nbsp;·&nbsp;${t('catalogCountLabel')(byCategory[cat].length)}</span>
+        <span class="chevron ${isOpen?'open':''}">▶</span>
+      </div>`;
+    if (isOpen) {
+      byCategory[cat].forEach(it=>{
+        const listEntry = Object.entries(currentList).find(([id,v])=>v.name_es===it.name_es && v.category===it.category);
+        const displayName = catalogName(it);
+        const payload = JSON.stringify(it).replace(/'/g,"&#39;");
+        const namePayload = JSON.stringify(it.name_es).replace(/'/g,"&#39;");
+        const catPayload = JSON.stringify(it.category).replace(/'/g,"&#39;");
+        html += `
+          <div class="catalog-row">
+            <div class="name" onclick='addCatalogItemToList(${payload})'>${displayName}</div>
+            ${listEntry
+              ? `<div class="qty-stepper">
+                   <button onclick='changeCatalogQty(${namePayload},${catPayload},-1)'>−</button>
+                   <span class="qty-val">${listEntry[1].qty}</span>
+                   <button onclick='changeCatalogQty(${namePayload},${catPayload},1)'>+</button>
+                 </div>`
+              : `<button class="add-btn" onclick='addCatalogItemToList(${payload})'>+ ${t('addBtn')}</button>`}
+          </div>
+        `;
+      });
+    }
+    html += `</div>`;
+  });
+
+  return html;
+}
+
+async function addCustomToCatalogAndList(){
+  const inp = document.getElementById('custom-catalog-input');
+  const catSel = document.getElementById('custom-catalog-category');
+  const name = inp.value.trim();
+  if (!name) return;
+  const category = catSel ? catSel.value : 'other';
+  inp.value = '';
+  const {name_es, name_en} = await buildBilingualNames(name);
+  const id = uid();
+  customCatalog[id] = { name_es, name_en, category };
+  saveCustomCatalog();
+  currentList[uid()] = { name_es, name_en, category, qty:1, checked:false, addedBy:myName, ts:Date.now() };
+  saveCurrentList();
+  showToast(t('toastAdded')(lang==='en' ? name_en : name_es));
+}
+
+
+function renderHistoryView(){
+  const entries = Object.entries(history).sort((a,b)=>b[1].completedAt-a[1].completedAt);
+  if (entries.length === 0) {
+    return `<div class="empty-state"><div class="icon">🧾</div><div class="title">${t('historyEmptyTitle')}</div><div>${t('historyEmptyBody')}</div></div>`;
+  }
+  let html = '';
+  entries.forEach(([id,h])=>{
+    const done = h.items.filter(i=>i.checked).length;
+    const date = new Date(h.completedAt).toLocaleString(t('locale'), {day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'});
+    html += `
+      <div class="card">
+        <div class="card-head">
+          <div><div class="card-title">${date}</div><div class="card-sub">${t('completedOf')(done,h.items.length)}</div></div>
+        </div>
+        <div class="card-actions">
+          <button class="primary" onclick="buildRegularListFromHistory('${id}')">${t('buildRegularBtn')}</button>
+        </div>
+      </div>
+    `;
+  });
+  return html;
+}
+
+/* ============================================================
+   EL NOOK — Iskra (or anyone) can flag something as
+   needed at the property without it going straight onto the
+   shopping list. The household reviews each flag and decides:
+   buy new (goes to the shopping list, or — for breakables that
+   come from a named supplier like Dunnes/Yorkshire Linen — into
+   a simple supplier order list) or get it from stock (dismiss).
+============================================================ */
+let collapsedNookStreams = {};
+STREAM_ORDER.forEach(s=>{ collapsedNookStreams[s] = false; });
+function toggleNookStreamCollapse(stream){
+  collapsedNookStreams[stream] = !collapsedNookStreams[stream];
+  render();
+}
+
+function renderRequestsView(){
+  const pending = Object.entries(requests).sort((a,b)=>(a[1].ts||0)-(b[1].ts||0));
+
+  let html = `
+    <div class="quick-add" style="margin-bottom:20px;">
+      <input id="request-input" placeholder="${t('requestInputPlaceholder')}" onkeydown="if(event.key==='Enter')submitRequest()" />
+      ${categorySelectHtml('request-category')}
+      ${streamSelectHtml('request-stream')}
+      <button onclick="submitRequest()">${t('requestSubmitBtn')}</button>
+    </div>
+  `;
+
+  // Browsable Nook inventory first — grouped by the 3 operational streams
+  const nookAll = fullNookCatalog();
+  const streamSections = {
+    welcome: { items: nookAll.filter(it=>it.stream==='welcome'), hint: t('welcomeSectionHint') },
+    breakable: { items: nookAll.filter(it=>it.stream==='breakable'), hint: t('breakableSectionHint') },
+    consumable: { items: nookAll.filter(it=>it.stream==='consumable' || !it.stream), hint: t('consumableSectionHint') }
+  };
+
+  html += `<div class="category-head">${t('nookInventoryHeading')}</div>`;
+  STREAM_ORDER.forEach(stream=>{
+    const section = streamSections[stream];
+    if (!section.items.length) return;
+    const isOpen = !collapsedNookStreams[stream];
+    html += `<div class="category-block">
+      <div class="category-head clickable" onclick="toggleNookStreamCollapse('${stream}')">
+        ${STREAM_ICONS[stream]} ${streamLabel(stream)}
+        <span class="chevron ${isOpen?'open':''}">▶</span>
+      </div>
+      <div class="stream-hint">${section.hint}</div>`;
+    if (isOpen) {
+      section.items.forEach(it=>{
+        const pendingEntry = Object.entries(requests).find(([id,v])=>v.name_es===it.name_es && v.category===it.category);
+        const displayName = catalogName(it);
+        const payload = JSON.stringify(it).replace(/'/g,"&#39;");
+        const namePayload = JSON.stringify(it.name_es).replace(/'/g,"&#39;");
+        const catPayload = JSON.stringify(it.category).replace(/'/g,"&#39;");
+        const photoUrl = nookItemPhotos[it.id];
+        html += `
+          <div class="catalog-row">
+            <input type="file" accept="image/*" capture="environment" id="photo-input-${it.id}" style="display:none" onchange="handleNookPhotoUpload('${it.id}', this)">
+            ${photoUrl
+              ? `<img class="item-thumb" src="${photoUrl}" onclick="triggerNookPhotoUpload('${it.id}')">`
+              : `<button class="photo-btn" onclick="triggerNookPhotoUpload('${it.id}')" title="${t('addPhotoLabel')}">📷</button>`}
+            <div class="name" onclick='flagCatalogItem(${payload})'>
+              ${displayName}${it.supplier ? ` <span class="supplier-tag">${it.supplier}</span>` : ''}
+              ${it.alwaysReplace ? `<div class="always-replace-note">${t('alwaysReplaceNote')}</div>` : ''}
+              ${(!it.alwaysReplace && it.parQty > 1) ? `<div class="par-note">${t('parLabel')(it.parQty)}</div>` : ''}
+            </div>
+            ${pendingEntry
+              ? `<div class="qty-stepper">
+                   <button onclick='changeRequestQty(${namePayload},${catPayload},-1)'>−</button>
+                   <span class="qty-val">${pendingEntry[1].qty||1}</span>
+                   <button onclick='changeRequestQty(${namePayload},${catPayload},1)'>+</button>
+                 </div>`
+              : `<button class="add-btn" onclick='flagCatalogItem(${payload})'>+ ${t('requestSubmitBtn')}</button>`}
+          </div>
+        `;
+      });
+    }
+    html += `</div>`;
+  });
+
+  // Pending flags — the thing the household needs to act on
+  html += `<div class="category-head" style="margin-top:18px;">${t('requestsPendingHeading')}</div>`;
+  if (pending.length === 0) {
+    html += `<div class="empty-state"><div class="icon">🏡</div><div class="title">${t('requestsEmptyTitle')}</div><div>${t('requestsEmptyBody')}</div></div>`;
+  } else {
+    pending.forEach(([id,r])=>{
+      const displayName = lang === 'en' ? (r.name_en||r.name_es) : (r.name_es||r.name_en);
+      const timeLabel = new Date(r.ts||Date.now()).toLocaleString(t('locale'), {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'});
+      const namePayload = JSON.stringify(r.name_es).replace(/'/g,"&#39;");
+      const catPayload = JSON.stringify(r.category).replace(/'/g,"&#39;");
+      const streamIcon = STREAM_ICONS[r.stream] || '📌';
+      html += `
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <div class="card-title">${streamIcon} ${displayName}${r.supplier ? ` <span class="supplier-tag">${r.supplier}</span>` : ''}</div>
+              <div class="card-sub">${t('requestedByPrefix')} ${r.requestedBy||''} · ${timeLabel}</div>
+            </div>
+            <div class="qty-stepper">
+              <button onclick='changeRequestQty(${namePayload},${catPayload},-1)'>−</button>
+              <span class="qty-val">${r.qty||1}</span>
+              <button onclick='changeRequestQty(${namePayload},${catPayload},1)'>+</button>
+            </div>
+          </div>
+          <div class="card-actions">
+            <button class="primary" onclick="addRequestToList('${id}')">${t('requestAddToListBtn')}</button>
+            <button onclick="dismissRequest('${id}')">${t('requestDismissBtn')}</button>
+          </div>
+        </div>
+      `;
+    });
+  }
+
+  // Supplier bags — read-only holding list for breakables flagged "buy new"
+  // (bedding/towels etc. come from named suppliers, not the shopping list)
+  const orderEntries = Object.entries(supplierOrders);
+  if (orderEntries.length > 0) {
+    const bySupplier = {};
+    orderEntries.forEach(([id,o])=>{
+      const key = o.supplier || t('noSupplierLabel');
+      (bySupplier[key] = bySupplier[key]||[]).push([id,o]);
+    });
+    html += `<div class="category-head" style="margin-top:18px;">${t('supplierBagsHeading')}</div>`;
+    Object.entries(bySupplier).forEach(([supplier, items])=>{
+      html += `<div class="card"><div class="card-title">${supplier}</div>`;
+      items.forEach(([id,o])=>{
+        const displayName = lang === 'en' ? (o.name_en||o.name_es) : (o.name_es||o.name_en);
+        html += `
+          <div class="item-row" style="border-bottom:1px dotted var(--line);">
+            <div class="item-info"><div class="item-name">${displayName} × ${o.qty||1}</div></div>
+            <button class="remove-x" onclick="removeSupplierOrder('${id}')">✕</button>
+          </div>
+        `;
+      });
+      html += `</div>`;
+    });
+  }
+
+  return html;
+}
+
+function flagCatalogItem(item){
+  const existing = Object.entries(requests).find(([id,v]) => v.name_es === item.name_es && v.category === item.category);
+  if (existing) {
+    requests[existing[0]].qty = (requests[existing[0]].qty||1) + 1;
+  } else {
+    requests[uid()] = { name_es:item.name_es, name_en:item.name_en, category:item.category, stream:item.stream||'consumable', supplier:item.supplier||'', qty:item.parQty||1, requestedBy:myName, ts:Date.now() };
+  }
+  saveRequests();
+  showToast(t('toastRequestSubmitted'));
+}
+
+function changeRequestQty(name_es, category, delta){
+  const found = Object.entries(requests).find(([id,v]) => v.name_es === name_es && v.category === category);
+  if (!found) return;
+  const [id, v] = found;
+  const newQty = (v.qty||1) + delta;
+  if (newQty <= 0) delete requests[id];
+  else requests[id].qty = newQty;
+  saveRequests();
+}
+
+async function submitRequest(){
+  const inp = document.getElementById('request-input');
+  const catSel = document.getElementById('request-category');
+  const streamSel = document.getElementById('request-stream');
+  if (!inp || !inp.value.trim()) return;
+  const name = inp.value.trim();
+  const category = catSel ? catSel.value : 'other';
+  const stream = streamSel ? streamSel.value : 'consumable';
+  inp.value = '';
+  const {name_es, name_en} = await buildBilingualNames(name);
+  const existing = Object.entries(requests).find(([id,v]) => v.name_es === name_es && v.category === category);
+  if (existing) requests[existing[0]].qty = (requests[existing[0]].qty||1) + 1;
+  else requests[uid()] = { name_es, name_en, category, stream, supplier:'', qty:1, requestedBy: myName, ts: Date.now() };
+  saveRequests();
+  showToast(t('toastRequestSubmitted'));
+}
+
+function addRequestToList(id){
+  const r = requests[id];
+  if (!r) return;
+  if (r.stream === 'breakable') {
+    // Breakables come from a named supplier, not the grocery shopping list —
+    // hold them in the simple supplier bag instead.
+    supplierOrders[uid()] = { name_es:r.name_es, name_en:r.name_en, supplier:r.supplier||'', qty:r.qty||1, ts:Date.now() };
+    saveSupplierOrders();
+  } else {
+    const existing = Object.entries(currentList).find(([id2,v]) => v.name_es === r.name_es && v.category === r.category);
+    if (existing) currentList[existing[0]].qty += (r.qty||1);
+    else currentList[uid()] = { name_es:r.name_es, name_en:r.name_en, category:r.category, qty:r.qty||1, checked:false, addedBy:r.requestedBy||myName, ts:Date.now() };
+    saveCurrentList();
+  }
+  delete requests[id];
+  saveRequests();
+  showToast(t('toastRequestAdded'));
+}
+
+function dismissRequest(id){
+  if (!requests[id]) return;
+  delete requests[id];
+  saveRequests();
+  showToast(t('toastRequestDismissed'));
+}
+
+function removeSupplierOrder(id){
+  delete supplierOrders[id];
+  saveSupplierOrders();
+}
+
+/* ============================================================
+   NOOK ITEM PHOTOS — reference photo per inventory item, so
+   Iskra can recognize what she's flagging. Stored in Firebase
+   Storage; only the download URL lives in the Realtime Database.
+============================================================ */
+function triggerNookPhotoUpload(itemId){
+  const inp = document.getElementById('photo-input-' + itemId);
+  if (inp) inp.click();
+}
+
+async function handleNookPhotoUpload(itemId, inputEl){
+  const file = inputEl.files && inputEl.files[0];
+  inputEl.value = ''; // reset so picking the same file again still fires onchange
+  if (!file) return;
+  if (!firebaseReady || !storage) { showToast(t('toastPhotoNeedsFirebase')); return; }
+  showToast(t('toastUploadingPhoto'));
+  try {
+    const path = 'nook-photos/' + itemId + '-' + Date.now();
+    const ref = storage.ref(path);
+    await ref.put(file);
+    const url = await ref.getDownloadURL();
+    nookItemPhotos[itemId] = url;
+    saveNookItemPhotos();
+    showToast(t('toastPhotoSaved'));
+  } catch (e) {
+    console.error('Photo upload failed', e);
+    showToast(t('toastPhotoFailed'));
+  }
+}
+
+function removeNookPhoto(itemId){
+  delete nookItemPhotos[itemId];
+  saveNookItemPhotos();
+}
+
+// initial paint
+render();
+</script>
+</body>
+</html>
