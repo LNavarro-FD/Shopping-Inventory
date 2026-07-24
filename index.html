@@ -254,6 +254,26 @@
     color:var(--ink-soft);
     margin-top:2px;
   }
+  .nook-location{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10px;
+    color:var(--ink-soft);
+    margin-top:2px;
+  }
+  .nook-note{
+    font-size:11px;
+    font-style:italic;
+    color:var(--ink-soft);
+    margin-top:2px;
+  }
+  .edit-meta-btn{
+    background:none;
+    border:none;
+    font-size:14px;
+    cursor:pointer;
+    flex-shrink:0;
+    padding:4px;
+  }
 
   .item-row{
     display:flex;
@@ -817,6 +837,11 @@ const STR = {
     toastPhotoFailed: "No se pudo subir la foto",
     toastPhotoNeedsFirebase: "Configura Firebase Storage primero",
     addPhotoLabel: "Añadir foto",
+    modalCancel: "Cancelar",
+    modalSave: "Guardar",
+    nookLocationPlaceholder: "Ubicación (p.ej. armario cocina)",
+    nookNotePlaceholder: "Nota (opcional)",
+    editNoteLocationLabel: "Editar nota/ubicación",
     requestsPendingHeading: "Avisos pendientes",
     nookInventoryHeading: "Inventario de El Nook",
     stream_welcome: "Bienvenida",
@@ -879,6 +904,11 @@ const STR = {
     toastPhotoFailed: "Couldn't upload the photo",
     toastPhotoNeedsFirebase: "Set up Firebase Storage first",
     addPhotoLabel: "Add photo",
+    modalCancel: "Cancel",
+    modalSave: "Save",
+    nookLocationPlaceholder: "Location (e.g. kitchen cupboard)",
+    nookNotePlaceholder: "Note (optional)",
+    editNoteLocationLabel: "Edit note/location",
     requestsPendingHeading: "Pending flags",
     nookInventoryHeading: "El Nook inventory",
     stream_welcome: "Welcome supplies",
@@ -1090,6 +1120,7 @@ let history = {};       // listId -> {completedAt,items:[]}
 let requests = {};      // requestId -> {name_es,name_en,category,stream,supplier,qty,requestedBy,ts} (El Nook)
 let supplierOrders = {}; // orderId -> {name_es,name_en,supplier,qty,ts} (El Nook breakables to buy new)
 let nookItemPhotos = {}; // itemId (seed or custom) -> download URL, reference photo for El Nook items
+let nookItemMeta = {}; // itemId -> {location, note} — where it's kept + any freeform note, per Nook item
 
 // NOOK-ONLY MODE — a link with ?view=nook shows just El Nook, nothing else.
 // Give this link to Iskra (or anyone) who shouldn't see the shopping list/history.
@@ -1151,6 +1182,7 @@ if (firebaseReady) {
   db.ref("requests").on("value", snap => { requests = snap.val() || {}; render(); updateRequestsBadge(); });
   db.ref("supplierOrders").on("value", snap => { supplierOrders = snap.val() || {}; render(); });
   db.ref("nookItemPhotos").on("value", snap => { nookItemPhotos = snap.val() || {}; render(); });
+  db.ref("nookItemMeta").on("value", snap => { nookItemMeta = snap.val() || {}; render(); });
 } else {
   // local-only fallback so the UI is still usable/demoable without Firebase configured
   render();
@@ -1163,6 +1195,7 @@ function saveHistory(){ if(firebaseReady) db.ref("history").set(history); else r
 function saveRequests(){ if(firebaseReady) db.ref("requests").set(requests); else render(); updateRequestsBadge(); }
 function saveSupplierOrders(){ if(firebaseReady) db.ref("supplierOrders").set(supplierOrders); else render(); }
 function saveNookItemPhotos(){ if(firebaseReady) db.ref("nookItemPhotos").set(nookItemPhotos); else render(); }
+function saveNookItemMeta(){ if(firebaseReady) db.ref("nookItemMeta").set(nookItemMeta); else render(); }
 function updateRequestsBadge(){
   const n = Object.keys(requests).length;
   const btn = document.getElementById('nav-requests');
@@ -1586,6 +1619,8 @@ function renderRequestsView(){
         const namePayload = JSON.stringify(it.name_es).replace(/'/g,"&#39;");
         const catPayload = JSON.stringify(it.category).replace(/'/g,"&#39;");
         const photoUrl = nookItemPhotos[it.id];
+        const meta = nookItemMeta[it.id] || {};
+        const displayNamePayload = JSON.stringify(displayName).replace(/'/g,"&#39;");
         html += `
           <div class="catalog-row">
             <input type="file" accept="image/*" capture="environment" id="photo-input-${it.id}" style="display:none" onchange="handleNookPhotoUpload('${it.id}', this)">
@@ -1596,7 +1631,10 @@ function renderRequestsView(){
               ${displayName}${it.supplier ? ` <span class="supplier-tag">${it.supplier}</span>` : ''}
               ${it.alwaysReplace ? `<div class="always-replace-note">${t('alwaysReplaceNote')}</div>` : ''}
               ${(!it.alwaysReplace && it.parQty > 1) ? `<div class="par-note">${t('parLabel')(it.parQty)}</div>` : ''}
+              ${meta.location ? `<div class="nook-location">📍 ${meta.location}</div>` : ''}
+              ${meta.note ? `<div class="nook-note">${meta.note}</div>` : ''}
             </div>
+            <button class="edit-meta-btn" onclick='openNookMetaModal("${it.id}", ${displayNamePayload})' title="${t('editNoteLocationLabel')}">✏️</button>
             ${pendingEntry
               ? `<div class="qty-stepper">
                    <button onclick='changeRequestQty(${namePayload},${catPayload},-1)'>−</button>
@@ -1774,6 +1812,32 @@ async function handleNookPhotoUpload(itemId, inputEl){
 function removeNookPhoto(itemId){
   delete nookItemPhotos[itemId];
   saveNookItemPhotos();
+}
+
+/* ============================================================
+   NOOK ITEM NOTES & LOCATION — where it's kept + any freeform
+   note (e.g. "top shelf, airing cupboard" / "only buy the small
+   size, big one doesn't fit the shelf").
+============================================================ */
+function openNookMetaModal(itemId, displayName){
+  const existing = nookItemMeta[itemId] || {};
+  renderModal(`
+    <h3>${displayName}</h3>
+    <input id="nook-meta-location-input" placeholder="${t('nookLocationPlaceholder')}" value="${existing.location||''}" />
+    <input id="nook-meta-note-input" placeholder="${t('nookNotePlaceholder')}" value="${existing.note||''}" />
+    <div class="modal-actions">
+      <button style="background:var(--paper-dark);" onclick="closeModal()">${t('modalCancel')}</button>
+      <button class="primary" style="background:var(--teal);color:white;" onclick="saveNookMetaConfirm('${itemId}')">${t('modalSave')}</button>
+    </div>
+  `);
+}
+function saveNookMetaConfirm(itemId){
+  const location = document.getElementById('nook-meta-location-input').value.trim();
+  const note = document.getElementById('nook-meta-note-input').value.trim();
+  if (!location && !note) delete nookItemMeta[itemId];
+  else nookItemMeta[itemId] = { location, note };
+  saveNookItemMeta();
+  closeModal();
 }
 
 // initial paint
