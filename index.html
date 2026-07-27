@@ -821,7 +821,7 @@ try {
 // APP_VERSION — bump on every change (patch=fix, minor=feature, major=breaking).
 // Shown in the header so you can tell at a glance whether a device has the
 // latest copy, and so we both know exactly what's live vs. what's pending.
-const APP_VERSION = "v1.2.0";
+const APP_VERSION = "v1.3.0";
 
 let lang = localStorage.getItem("lalista_lang") || "es";
 
@@ -849,6 +849,9 @@ const STR = {
     toastAdded: (n)=>`Añadido: ${n}`,
     toastEmptyAlready: "La lista ya está vacía",
     confirmFinishList: (n)=>`¿Archivar esta lista? ${n} artículo${n===1?'':'s'} se guardará${n===1?'':'n'} en el Historial y empezarás una lista nueva.`,
+    confirmCarryOver: (n)=>`${n} artículo${n===1?'':'s'} no ${n===1?'se marcó':'se marcaron'} como comprado${n===1?'':'s'}. ¿Quieres pasarlo${n===1?'':'s'} a la nueva lista?`,
+    confirmCarryOverAll: (n)=>`No has marcado ningún artículo como comprado. ¿Quieres pasar los ${n} artículos a la nueva lista?`,
+    toastFinishedWithCarryOver: (n)=>`Lista archivada ✓ ${n} artículo${n===1?'':'s'} pasado${n===1?'':'s'} a la nueva lista`,
     confirmDeleteHistory: "¿Eliminar esta lista del historial?",
     toastFinished: "Lista archivada ✓ Empezando una nueva",
     toastBuiltFromHistory: "Artículos añadidos a tu lista",
@@ -920,6 +923,9 @@ const STR = {
     toastAdded: (n)=>`Added: ${n}`,
     toastEmptyAlready: "The list is already empty",
     confirmFinishList: (n)=>`Archive this list? ${n} item${n===1?'':'s'} will be saved to History and you'll start a new one.`,
+    confirmCarryOver: (n)=>`${n} item${n===1?'':'s'} weren't checked off. Carry ${n===1?'it':'them'} into your new list?`,
+    confirmCarryOverAll: (n)=>`None of the items are checked off. Carry all ${n} into your new list?`,
+    toastFinishedWithCarryOver: (n)=>`List archived ✓ ${n} item${n===1?'':'s'} carried into the new list`,
     confirmDeleteHistory: "Delete this list from history?",
     toastFinished: "List archived ✓ Starting a new one",
     toastBuiltFromHistory: "Items added to your list",
@@ -1379,12 +1385,33 @@ function finishList(){
   const items = Object.values(currentList);
   if (items.length === 0) { showToast(t('toastEmptyAlready')); return; }
   if (!confirm(t('confirmFinishList')(items.length))) return;
+
+  const unchecked = items.filter(it=>!it.checked);
+  let carryOver = false;
+  if (unchecked.length > 0 && unchecked.length < items.length) {
+    carryOver = confirm(t('confirmCarryOver')(unchecked.length));
+  } else if (unchecked.length > 0 && unchecked.length === items.length) {
+    // Nothing was checked off at all — still worth asking, since archiving
+    // an entirely-unchecked list is unusual and likely accidental.
+    carryOver = confirm(t('confirmCarryOverAll')(unchecked.length));
+  }
+
   const listId = uid();
   history[listId] = { completedAt: Date.now(), items };
-  currentList = {};
   saveHistory();
+
+  if (carryOver) {
+    const newList = {};
+    unchecked.forEach(it=>{
+      newList[uid()] = { name_es:it.name_es, name_en:it.name_en, category:it.category, qty:it.qty||1, checked:false, addedBy:it.addedBy||myName, ts:Date.now() };
+    });
+    currentList = newList;
+    showToast(t('toastFinishedWithCarryOver')(unchecked.length));
+  } else {
+    currentList = {};
+    showToast(t('toastFinished'));
+  }
   saveCurrentList();
-  showToast(t('toastFinished'));
   setView('catalog');
 }
 
